@@ -1,3 +1,14 @@
 apiVersion: v1
-entries: {}
-generated: "2020-04-16T21:12:07.632392-07:00"
+entries:
+  composite-builder-scheduler:
+  - apiVersion: v2
+    appVersion: scheduler-dev-khjeq
+    created: "2020-04-21T13:59:10.236723-07:00"
+    description: A Helm chart for Kubernetes
+    digest: 121a3ba12f35fef5682fc7174b1481de8a9f07d935e87850a70471517eac49bb
+    name: composite-builder-scheduler
+    type: application
+    urls:
+    - https://github.com/Cogniac/cogniac-charts/composite-builder-scheduler-0.1.0.tgz
+    version: 0.1.0
+generated: "2020-04-21T13:59:10.234787-07:00"

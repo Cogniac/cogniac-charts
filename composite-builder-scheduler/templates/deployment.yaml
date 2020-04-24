@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "composite-builder-scheduler.fullname" . }}
+  labels:
+    {{- include "composite-builder-scheduler.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "composite-builder-scheduler.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "composite-builder-scheduler.selectorLabels" . | nindent 8 }}
+    spec:
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      serviceAccountName: {{ include "composite-builder-scheduler.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - env:
+          #  required to know the docker image to be deployed for each app
+          - name: APP_CONTAINER_NAME
+            value: {{ .Values.deployment.app_container_name }}
+          #  must know in order to provision app workloads with iam credentials
+          - name: RANCHER_IAM_SECRET_NAME
+            value: {{ .Values.deployment.rancher_iam_secret_name }}
+          #  must know in order to provision app workloads with docker registry info
+          - name: IMAGE_PULL_SECRET_NAME
+            value: {{ .Values.deployment.image_pull_secret_name }}
+          #  must know in order to provision app workloads with the loggly api key
+          - name: LOGGLY_SECRET_NAME
+            value: {{ .Values.deployment.loggly_secret_name }}
+          envFrom:
+          - secretRef:
+              name: {{ .Values.deployment.rancher_iam_secret_name }}
+              optional: false
+          - secretRef:
+              name: {{ .Values.deployment.loggly_secret_name }}
+              optional: false
+          name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          stdin: {{ .Values.image.stdin }}
+          tty: {{ .Values.image.tty }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
